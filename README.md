@@ -7,7 +7,7 @@ necesarios / 30% lujos personales / 20% ahorro**, con login, tablas, gráficos
 Construida en **Python + Flask**, con **arquitectura limpia** (Clean
 Architecture) separada en capas independientes.
 
-## 🚀 Cómo ejecutarla
+## Cómo ejecutarla
 
 Requisitos: Python 3.10+
 
@@ -77,7 +77,7 @@ app/
 - **Historial quincenal**: igual que el anterior, pero agrupado en quincenas
   (días 1–15 y 16–fin de mes).
 
-## 🗄️ Base de datos
+## Base de datos
 
 SQLite con dos tablas: `users` y `expenses` (con `category` = `necesidad`,
 `lujo` o `ahorro`, y `expense_date` en formato `YYYY-MM-DD`).
@@ -87,3 +87,4 @@ SQLite con dos tablas: `users` y `expenses` (con `category` = `necesidad`,
 - Cambia `SECRET_KEY` en `config.py` (o vía variable de entorno) antes de
   usar esto en producción.
 - Las contraseñas nunca se guardan en texto plano.
+- se recomienda usar el puerto de su preferencia para ejecutarla 
