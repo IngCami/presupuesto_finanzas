@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Panel{% endblock %}
+{% block breadcrumb %}Panel{% endblock %}
+{% block content %}
+<h1>Hola, {{ user.name }} </h1>
+<p class="subtitle">Este es tu resumen del mes actual
+
+{% if user.monthly_income <= 0 %}
+<div class="card">
+    <p>Aún no has configurado tu ingreso mensual. <a href="{{ url_for('auth.settings') }}">Configúralo aquí</a> para calcular tu presupuesto.</p>
+</div>
+{% endif %}
+
+<div class="grid-3">
+    {% for cat in categorias %}
+    {% set estado = reporte.estados[cat] %}
+    <div class="card budget-card {{ cat.value }}">
+        <div class="card-head">
+            <span class="icon-circle">
+                {% if cat.value == 'necesidad' %}
+                <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+                {% elif cat.value == 'lujo' %}
+                <svg viewBox="0 0 24 24"><path d="M12 2l2.4 7.2H22l-6 4.6 2.3 7.2L12 16.4 5.7 21 8 13.8 2 9.2h7.6z"/></svg>
+                {% else %}
+                <svg viewBox="0 0 24 24"><path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94.63 1.5 1.98 2.63 3.61 2.95V19H7v2h10v-2h-4v-3.11c1.63-.32 2.98-1.45 3.61-2.95C19.08 12.63 21 10.55 21 8V7c0-1.1-.9-2-2-2z"/></svg>
+                {% endif %}
+            </span>
+            <h2 class="mt-0">{{ cat.etiqueta }} <span style="font-weight:400; font-size:0.8rem; color:var(--color-muted);">({{ (cat.porcentaje_recomendado*100)|int }}%)</span></h2>
+        </div>
+        <div class="amounts">
+            <span>Gastado: <strong>{{ '%.0f'|format(estado.gastado) }}</strong></span>
+            <span>Presupuesto: <strong>{{ '%.0f'|format(estado.recomendado) }}</strong></span>
+        </div>
+        <div class="progress-bar {{ cat.value }}">
+            <div class="progress-bar-fill" style="width: {{ [estado.porcentaje_usado, 100]|min }}%;"></div>
+        </div>
+        {% if estado.excedido %}
+            <span class="badge over">Excedido por {{ '%.0f'|format(-estado.diferencia) }}</span>
+        {% else %}
+            <span class="badge ok">Disponible: {{ '%.0f'|format(estado.diferencia) }}</span>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <h2 class="mt-0">Distribución del mes</h2>
+        <div class="chart-wrap">
+            <canvas id="chartMes"></canvas>
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="mt-0">Últimos gastos</h2>
+        {% if gastos_recientes %}
+        <table>
+            <thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th></tr></thead>
+            <tbody>
+            {% for g in gastos_recientes %}
+                <tr>
+                    <td>{{ g.expense_date.strftime('%d/%m') }}</td>
+                    <td>{{ g.description }}</td>
+                    <td>{{ '%.2f'|format(g.amount) }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">Todavía no has registrado gastos.<br><a href="{{ url_for('expenses.list_expenses') }}">Agrega tu primer gasto</a></p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('chartMes');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Servicios básicos', 'Lujos personales', 'Ahorro'],
+        datasets: [{
+            data: [
+                {{ reporte.estados[categorias[0]].gastado }},
+                {{ reporte.estados[categorias[1]].gastado }},
+                {{ reporte.estados[categorias[2]].gastado }},
+            ],
+            backgroundColor: ['#29b6d8', '#f2994a', '#27ae60'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+</script>
+{% endblock %}

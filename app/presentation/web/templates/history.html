@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }}{% endblock %}
+{% block content %}
+<h1>{{ titulo }}</h1>
+<p class="subtitle">Evolución de tus gastos por categoría</p>
+
+<div class="card">
+    <div class="chart-wrap">
+        <canvas id="chartHistorial"></canvas>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="mt-0">Detalle por periodo</h2>
+    {% if resumenes %}
+    <div class="history-list">
+        {% for r in resumenes %}
+        <details style="margin-bottom: 1rem; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <summary style="padding: 15px; cursor: pointer; background-color: #f9fafb; border-radius: 8px;">
+                <div style="display: inline-flex; justify-content: space-between; width: 95%; align-items: center; font-weight: bold;">
+                    <span style="font-size: 1.1rem; color: #1f2937;">{{ r.label }}</span>
+                    <span>Total gastado: {{ '%.2f'|format(r.total) }}</span>
+                    {% if 'quincena' in titulo|lower %}
+                        <a href="{{ url_for('expenses.reporte_quincena_pdf', texto_quincena=r.label) }}" target="_blank" 
+                           style="display: inline-block; padding: 5px 10px; background-color: #f59e0b; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">
+                           📄 Generar PDF
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('expenses.reporte_pdf', month_year=r.label) }}" target="_blank" 
+                           style="display: inline-block; padding: 5px 10px; background-color: #3b82f6; color: white; text-decoration: none; border-radius: 5px; font-size: 0.9rem;">
+                           📄 Generar PDF
+                        </a>
+                    {% endif %}
+                </div>
+            </summary>
+            <div style="padding: 20px 15px;">
+                <div class="grid-3">
+                    {% for cat, monto in r.por_categoria.items() %}
+                    <div style="text-align: center; padding: 15px; border: 1px solid #f3f4f6; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                        <span class="category-tag {{ cat.value }}" style="display: inline-block; margin-bottom: 10px; font-size: 0.85rem;">
+                            {{ cat.etiqueta }}
+                        </span>
+                        <div style="font-size: 1.2rem; font-weight: 600; color: #374151;">
+                            {{ '%.2f'|format(monto) }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+        </details>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="empty-state">Aún no hay suficiente historial para mostrar.</p>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+fetch("{{ url_for(endpoint_json) }}")
+    .then(res => res.json())
+    .then(data => {
+        const ctx = document.getElementById('chartHistorial');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    { label: 'Servicios básicos', data: data.necesidad, backgroundColor: '#3b82f6' },
+                    { label: 'Lujos personales', data: data.lujo, backgroundColor: '#f59e0b' },
+                    { label: 'Ahorro', data: data.ahorro, backgroundColor: '#10b981' }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { stacked: true },
+                    y: { stacked: true, beginAtZero: true }
+                },
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    });
+</script>
+{% endblock %}

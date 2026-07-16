@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte Financiero - {{ mes }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .header { border-bottom: 2px solid #3b82f6; padding-bottom: 10px; margin-bottom: 20px; }
+        .summary { background: #f9fafb; padding: 15px; border-radius: 8px; margin-bottom: 30px; display: flex; justify-content: space-between; border: 1px solid #e5e7eb; }
+        .summary div { text-align: center; }
+        .summary strong { display: block; font-size: 1.2rem; }
+        .sobrante { color: #10b981; }
+        .faltante { color: #ef4444; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 0.9rem; }
+        th, td { padding: 8px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #f3f4f6; border-bottom: 2px solid #ccc; }
+        .category-title { background-color: #e5e7eb; padding: 6px 12px; margin-top: 20px; font-weight: bold; border-radius: 4px; }
+        @media print {
+            .no-print { display: none !important; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="text-align: right; margin-bottom: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">🖨️ Guardar como PDF</button>
+<button onclick="window.close()" style="padding: 10px 20px; background: #6b7280; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px;">Cerrar pestaña</button>
+    </div>
+
+    <div class="header">
+        <h1 style="margin: 0; color: #1f2937;">Reporte de Gastos</h1>
+        <p style="font-size: 1.2rem; color: #6b7280; margin-top: 5px;">Periodo: <strong>{{ mes }}</strong></p>
+    </div>
+
+    <div class="summary">
+        <div><span style="color: #6b7280;">Ingreso del mes</span><strong>{{ '%.0f'|format(ingreso) }} COP</strong></div>
+        <div><span style="color: #6b7280;">Total Gastado</span><strong>{{ '%.0f'|format(total_gastado) }} COP</strong></div>
+        <div>
+            <span style="color: #6b7280;">Restante / Saldo</span>
+            <strong class="{% if sobrante >= 0 %}sobrante{% else %}faltante{% endif %}">
+                {{ '%.0f'|format(sobrante) }} COP
+            </strong>
+        </div>
+    </div>
+
+    <h2 style="color: #1f2937;">Detalle de Gastos por Categoría</h2>
+
+    <div class="category-title" style="border-left: 4px solid #3b82f6;">🔵 Servicios básicos necesarios</div>
+    {% if gastos_categoria['necesidad'] %}
+    <table>
+        <thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th></tr></thead>
+        <tbody>
+            {% for g in gastos_categoria['necesidad'] %}
+            <tr><td>{{ g.expense_date.strftime('%d/%m/%Y') }}</td><td>{{ g.description }}</td><td>{{ '%.0f'|format(g.amount) }} COP</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #6b7280; font-style: italic;">Sin registros en esta categoría.</p>
+    {% endif %}
+    <div class="category-title" style="border-left: 4px solid #f59e0b;">🟠 Lujos personales</div>
+    {% if gastos_categoria['lujo'] %}
+    <table>
+        <thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th></tr></thead>
+        <tbody>
+            {% for g in gastos_categoria['lujo'] %}
+            <tr><td>{{ g.expense_date.strftime('%d/%m/%Y') }}</td><td>{{ g.description }}</td><td>{{ '%.0f'|format(g.amount) }} COP</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #6b7280; font-style: italic;">Sin registros en esta categoría.</p>
+    {% endif %}
+
+    <div class="category-title" style="border-left: 4px solid #10b981;">🟢 Ahorro</div>
+    {% if gastos_categoria['ahorro'] %}
+    <table>
+        <thead><tr><th>Fecha</th><th>Descripción</th><th>Monto</th></tr></thead>
+        <tbody>
+            {% for g in gastos_categoria['ahorro'] %}
+            <tr><td>{{ g.expense_date.strftime('%d/%m/%Y') }}</td><td>{{ g.description }}</td><td>{{ '%.0f'|format(g.amount) }} COP</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p style="color: #6b7280; font-style: italic;">Sin registros en esta categoría.</p>
+    {% endif %}
+
+    <script>
+        setTimeout(() => { window.print(); }, 500);
+    </script>
+</body>
+</html>

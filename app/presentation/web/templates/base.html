@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Mis Finanzas 50/30/20{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if session.get('user_id') %}
+    <div class="app-shell">
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <span>MIS FINANZAS</span>
+            </div>
+
+            <div class="sidebar-user">
+                <div class="avatar">
+                    <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.5c-3.3 0-9.8 1.6-9.8 4.9v2.4h19.6v-2.4c0-3.3-6.5-4.9-9.8-4.9z"/></svg>
+                </div>
+                <div class="user-label">USER<span class="accent">PANEL</span></div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="{{ url_for('expenses.dashboard') }}" class="{{ 'active' if request.endpoint == 'expenses.dashboard' }}">
+                    <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+                    Panel
+                </a>
+                <a href="{{ url_for('expenses.list_expenses') }}" class="{{ 'active' if request.endpoint == 'expenses.list_expenses' }}">
+                    <svg viewBox="0 0 24 24"><path d="M5 9h3v11H5zm11-6h3v17h-3zm-5.5 4h3v13h-3z"/></svg>
+                    Gastos
+                </a>
+                <a href="{{ url_for('reports.monthly_history') }}" class="{{ 'active' if request.endpoint == 'reports.monthly_history' }}">
+                    <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5z"/></svg>
+                    Historial mensual
+                </a>
+                <a href="{{ url_for('reports.biweekly_history') }}" class="{{ 'active' if request.endpoint == 'reports.biweekly_history' }}">
+                    <svg viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM5 8V6h14v2H5zm2 4h5v5H7z"/></svg>
+                    Historial quincenal
+                </a>
+                <a href="{{ url_for('auth.settings') }}" class="{{ 'active' if request.endpoint == 'auth.settings' }}">
+                    <svg viewBox="0 0 24 24"><path d="M19.4 13c.04-.32.06-.66.06-1s-.02-.68-.07-1l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.31-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65A.5.5 0 0 0 14 2h-4a.5.5 0 0 0-.5.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46c-.13.22-.07.49.12.64L4.56 11c-.05.32-.08.67-.08 1s.02.68.07 1l-2.11 1.65a.5.5 0 0 0-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.04.28.27.4.5.4h4c.23 0 .46-.12.5-.4l.38-2.65c.61-.25 1.17-.58 1.69-.98l2.49 1c.22.08.49 0 .61-.22l2-3.46c.13-.22.07-.49-.12-.64L19.4 13zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"/></svg>
+                    Configuración Ingresos
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <a href="{{ url_for('auth.logout') }}">
+                    <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L17.17 10H9v2h8.17l-1.58 1.59L17 15l4-4zM5 5h7V3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h7v-2H5V5z"/></svg>
+                    Salir
+                </a>
+            </div>
+        </aside>
+
+        <div class="main-area">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Abrir menú">
+                        <svg viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+                    </button>
+                    <span class="breadcrumb">Mis Finanzas &nbsp;|&nbsp; <strong>{% block breadcrumb %}Panel{% endblock %}</strong></span>
+                </div>
+                <div class="topbar-right">
+                    <a href="{{ url_for('auth.logout') }}">Salir</a>
+                </div>
+            </header>
+
+            <main class="container">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    {% else %}
+    <div class="auth-shell">
+        <div class="container" style="padding:0;">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {{ self.content() }}
+        </div>
+    </div>
+    {% endif %}
+
+    {% block scripts %}{% endblock %}
+
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        if (sidebarToggle && sidebar && sidebarOverlay) {
+            sidebarToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('open');
+            });
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('open');
+            });
+        }
+    </script>
+</body>
+</html>
